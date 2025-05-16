@@ -1,0 +1,96 @@
+/* color palette from <https://github.com/vuejs/theme> */
+:root {
+  --vt-c-white: #ffffff;
+  --vt-c-white-soft: #f8f8f8;
+  --vt-c-white-mute: #f2f2f2;
+
+  --vt-c-black: #181818;
+  --vt-c-black-soft: #222222;
+  --vt-c-black-mute: #282828;
+
+  --vt-c-indigo: #2c3e50;
+  --vt-c-gray: #555b6e;
+  --vt-c-light-gray: #d1d1d1;
+
+  --vt-c-divider-light-1: rgba(60, 60, 60, 0.29);
+  --vt-c-divider-light-2: rgba(60, 60, 60, 0.12);
+
+  --vt-c-text-light-1: var(--vt-c-indigo);
+  --vt-c-text-light-2: rgba(60, 60, 60, 0.75);
+}
+
+/* semantic color variables for this project */
+:root {
+  --color-background: #f0f2f5;
+  --color-background-soft: var(--vt-c-white-soft);
+  --color-background-mute: var(--vt-c-white-mute);
+
+  --color-border: var(--vt-c-light-gray);
+  --color-border-hover: #b0b0b0;
+
+  --color-heading: var(--vt-c-indigo);
+  --color-text: var(--vt-c-gray);
+
+  --section-gap: 160px;
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+  margin: 0;
+  font-weight: normal;
+}
+
+body {
+  min-height: 100vh;
+  color: var(--color-text);
+  background: var(--color-background);
+  transition:
+    color 0.3s,
+    background-color 0.3s;
+  line-height: 1.6;
+  font-family: 'Helvetica Neue', Arial, sans-serif;
+  font-size: 16px;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Globala stilar för #app och länkar från main.css, flyttade hit från ursprungliga main.css för bättre översikt */
+#app {
+  max-width: 1280px; /* Behåll max-bredd för innehållet */
+  margin: 0 auto; /* Centrera innehållet */
+  padding: 0 2rem; /* Padding på sidorna. Ta bort 2rem top/bottom om header/footer hanterar det */
+  /* Om header/footer är fullbredd, kan denna padding behöva sitta på main-elementet istället */
+  font-weight: normal;
+}
+
+a,
+.green {
+  /* .green används inte aktivt, men behåller regeln ifall den skulle adderas senare */
+  text-decoration: none;
+  color: var(--vt-c-indigo); /* Använd en temafärg för länkar generellt */
+  transition: 0.3s;
+  /* padding: 3px; */ /* Tas bort, kan vara för specifikt globalt */
+}
+
+@media (hover: hover) {
+  a:hover {
+    /* background-color: hsla(160, 100%, 37%, 0.2); */ /* Tas bort, nav har egen hover */
+    color: var(--vt-c-text-light-2); /* Mörkare indigo vid hover för generella länkar */
+  }
+}
+
+@media (min-width: 1024px) {
+  body {
+    /* display: flex; */ /* Borttagen */
+    /* place-items: center; */ /* Borttagen */
+  }
+
+  #app {
+    /* display: grid; */ /* Borttagen */
+    /* grid-template-columns: 1fr 1fr; */ /* Borttagen */
+    /* padding: 0 2rem; */ /* Behålls eller justeras från #app globalt */
+  }
+}
