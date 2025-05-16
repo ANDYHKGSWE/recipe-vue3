@@ -3,47 +3,84 @@ import { ref, onMounted } from 'vue'
 import type { Meal } from '../types/RecipeTypes'
 import RecipeCard from '../components/RecipeCard.vue'
 
-const favoriteMeals = ref<Meal[]>([])
+const favoriteMealsDetails = ref<Meal[]>([])
 const isLoading = ref(true)
 const error = ref<string | null>(null)
 
 const FAVORITES_STORAGE_KEY = 'vue-recipe-favorites'
 
-function loadFavoriteMealsFromStorage() {
+async function fetchFavoriteMealDetails(mealId: string): Promise<Meal | null> {
+  try {
+    const response = await fetch(`https://www.themealdb.com/api/json/v1/1/lookup.php?i=${mealId}`)
+    if (!response.ok) {
+      console.warn(`API call failed for meal ID ${mealId}: ${response.status}`)
+      return null
+    }
+    const data = await response.json()
+    return data.meals && data.meals.length > 0 ? data.meals[0] : null
+  } catch (e) {
+    console.error(`Error fetching details for meal ID ${mealId}:`, e)
+    return null
+  }
+}
+
+async function loadFavoriteDetails() {
   isLoading.value = true
   error.value = null
+  favoriteMealsDetails.value = []
   try {
     const favoritesJson = localStorage.getItem(FAVORITES_STORAGE_KEY)
     if (favoritesJson) {
-      favoriteMeals.value = JSON.parse(favoritesJson)
+      const favoriteIds: string[] = JSON.parse(favoritesJson)
+      if (favoriteIds.length === 0) {
+        favoriteMealsDetails.value = []
+        isLoading.value = false
+        return
+      }
+
+      const mealPromises = favoriteIds.map(fetchFavoriteMealDetails)
+      const results = await Promise.all(mealPromises)
+      favoriteMealsDetails.value = results.filter((meal): meal is Meal => meal !== null)
+
+      if (favoriteMealsDetails.value.length === 0 && favoriteIds.length > 0) {
+        error.value = 'Could not load details for your favorite recipes. Some might be unavailable.'
+      }
     } else {
-      favoriteMeals.value = []
+      favoriteMealsDetails.value = []
     }
   } catch (e) {
-    console.error('Error loading favorites from localStorage:', e)
-    error.value = 'Could not load your favorites. The data might be corrupted.'
-    favoriteMeals.value = [] // Rensa vid fel
+    console.error('Error loading favorite IDs from localStorage:', e)
+    error.value = 'Could not load your favorites. The stored data might be corrupted.'
+    favoriteMealsDetails.value = []
   }
   isLoading.value = false
 }
 
 function removeFromFavorites(mealIdToRemove: string) {
-  // Hämta aktuella favoriter, filtrera bort den som ska tas bort, och spara igen
-  let currentFavorites = favoriteMeals.value
-  currentFavorites = currentFavorites.filter((meal) => meal.idMeal !== mealIdToRemove)
-  localStorage.setItem(FAVORITES_STORAGE_KEY, JSON.stringify(currentFavorites))
-  favoriteMeals.value = currentFavorites // Uppdatera den lokala refen för att rendera om vyn
-  // Ingen @toggle-favorite behövs från RecipeCard här om vi inte vill ha dubbelriktad borttagning direkt
+  try {
+    const favoritesJson = localStorage.getItem(FAVORITES_STORAGE_KEY)
+    if (favoritesJson) {
+      let favoriteIds: string[] = JSON.parse(favoritesJson)
+      favoriteIds = favoriteIds.filter((id) => id !== mealIdToRemove)
+      localStorage.setItem(FAVORITES_STORAGE_KEY, JSON.stringify(favoriteIds))
+      favoriteMealsDetails.value = favoriteMealsDetails.value.filter(
+        (meal) => meal.idMeal !== mealIdToRemove,
+      )
+      if (favoriteMealsDetails.value.length === 0 && favoriteIds.length === 0) {
+      }
+    }
+  } catch (e) {
+    console.error('Error updating favorites in localStorage:', e)
+    error.value = 'Could not update your favorites list.'
+  }
 }
 
-// Denna funktion behövs om RecipeCard fortfarande förväntar sig den, annars kan den tas bort om RecipeCard bara visar status.
-// För nu, låt oss anta att RecipeCard behöver veta om den är en favorit (t.ex. för styling)
 function isMealFavorite(mealId: string): boolean {
-  return favoriteMeals.value.some((meal) => meal.idMeal === mealId)
+  return favoriteMealsDetails.value.some((meal) => meal.idMeal === mealId)
 }
 
 onMounted(() => {
-  loadFavoriteMealsFromStorage()
+  loadFavoriteDetails()
 })
 </script>
 
@@ -54,9 +91,9 @@ onMounted(() => {
     <div v-if="error" class="error-message">{{ error }}</div>
 
     <div v-if="!isLoading && !error">
-      <div v-if="favoriteMeals.length > 0" class="recipes-grid">
+      <div v-if="favoriteMealsDetails.length > 0" class="recipes-grid">
         <RecipeCard
-          v-for="meal in favoriteMeals"
+          v-for="meal in favoriteMealsDetails"
           :key="meal.idMeal"
           :meal="meal"
           :is-favorite="isMealFavorite(meal.idMeal)"
