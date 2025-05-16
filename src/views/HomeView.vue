@@ -128,7 +128,7 @@ onMounted(() => {
   <main class="home-view">
     <!-- Borttagen visning av providedMessage -->
 
-    <h1 :style="{ color: theme.primaryColor }">Recept</h1>
+    <h1 :style="{ color: theme.primaryColor }">Andy's Recept</h1>
 
     <!-- Sökfält -->
     <div class="search-container">

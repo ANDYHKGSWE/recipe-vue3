@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { RouterLink, RouterView } from 'vue-router'
 import { provide } from 'vue'
+import AppFooter from './components/AppFooter.vue'
 
 // Provide data to child components
 provide('theme', {
@@ -10,19 +11,35 @@ provide('theme', {
 </script>
 
 <template>
-  <header>
-    <div class="wrapper">
-      <nav>
-        <RouterLink to="/">Recipes</RouterLink>
-        <RouterLink to="/favorites">Favorites</RouterLink>
-      </nav>
-    </div>
-  </header>
+  <div class="app-container">
+    <header>
+      <div class="wrapper">
+        <nav>
+          <RouterLink to="/">Recipes</RouterLink>
+          <RouterLink to="/favorites">Favorites</RouterLink>
+        </nav>
+      </div>
+    </header>
 
-  <RouterView />
+    <main class="main-content">
+      <RouterView />
+    </main>
+
+    <AppFooter />
+  </div>
 </template>
 
 <style scoped>
+.app-container {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+
+.main-content {
+  flex-grow: 1;
+}
+
 header {
   line-height: 1.5;
   padding: 1rem 0;
@@ -66,9 +83,6 @@ nav a:first-of-type {
   header {
     display: flex;
     justify-content: center;
-  }
-
-  header .wrapper {
   }
 
   nav {
